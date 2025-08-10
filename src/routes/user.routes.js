@@ -17,7 +17,7 @@ const {
   getBlockedProfile,
 } = require("../controllers/user.controller");
 
-const userCheck = require("../middleware/User");
+const userCheck = require("../middlewares/User");
 const upload = require("../utils/multer");
 const router = require("express").Router();
 

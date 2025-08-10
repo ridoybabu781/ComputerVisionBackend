@@ -52,6 +52,12 @@ const updateOrder = async (req, res, next) => {
     const userId = req.userId;
     const orderId = req.params.id;
 
+    const user = await User.findById(userId);
+
+    if (user.role !== "admin") {
+      return next(createHttpError(400, "You're not allowed to do this"));
+    }
+
     const { status } = req.body;
 
     const order = await Order.findByIdAndUpdate(
@@ -68,7 +74,27 @@ const updateOrder = async (req, res, next) => {
     next(error);
   }
 };
-const cancelOrder = async (req, res, next) => {};
+const cancelOrder = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const orderId = req.params.id;
+
+    const { status, cancelReason } = req.body;
+
+    const order = await Order.findByIdAndUpdate(
+      orderId,
+      { status, cancelReason },
+      { new: true }
+    );
+
+    if (!order) {
+      return next(createHttpError(400, "Something went wrong"));
+    }
+    res.status(200).json({ message: "Canceled successfully", order });
+  } catch (error) {
+    next(error);
+  }
+};
 
 module.exports = {
   addOrder,

@@ -10,7 +10,7 @@ const config = require("./config");
 
 // Routes
 const userRouter = require("./routes/user.routes");
-const errorHandler = require("./middleware/errorHandler");
+const errorHandler = require("./middlewares/errorHandler");
 const productRouter = require("./routes/product.routes");
 
 // Middleware
