@@ -2,6 +2,7 @@ const Product = require("../models/product.model");
 const User = require("../models/user.model");
 const createError = require("http-errors");
 const cloudinary = require("../utils/cloudinary");
+const fs = require("fs");
 
 const addProduct = async (req, res, next) => {
   try {
