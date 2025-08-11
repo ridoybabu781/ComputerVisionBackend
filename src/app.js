@@ -12,6 +12,7 @@ const config = require("./config");
 const userRouter = require("./routes/user.routes");
 const errorHandler = require("./middlewares/errorHandler");
 const productRouter = require("./routes/product.routes");
+const orderRouter = require("./routes/order.routes");
 
 // Middleware
 app.use(express.json());
@@ -27,6 +28,7 @@ app.use(
 // Routes
 app.use("/api/auth", userRouter);
 app.use("/api/product", productRouter);
+app.use("/api/order", orderRouter);
 
 // Centralized error handler
 app.use(errorHandler);

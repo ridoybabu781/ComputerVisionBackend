@@ -38,9 +38,12 @@ const addProduct = async (req, res, next) => {
     };
 
     const uploadedImages = await Promise.all(
-      images.map((image) => uploadFromBuffer(image.buffer))
+      images.map((image) => {
+        const fileBuffer = fs.readFileSync(image.path);
+        return uploadFromBuffer(fileBuffer);
+      })
     );
-    const imageUrls = results.map((r) => r.secure_url);
+    const imageUrls = uploadedImages.map((r) => r.secure_url);
 
     if (!title || !description || !model || !price) {
       return next(createError(404, "Something is missing"));
