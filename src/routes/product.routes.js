@@ -11,7 +11,7 @@ const {
 const upload = require("../utils/multer");
 
 productRouter.post("/addProduct", upload.array("images", 5), User, addProduct);
-productRouter.get("/getProduct", getProduct);
+productRouter.get("/getProduct/:id", getProduct);
 productRouter.get("/getProducts", getProducts);
 productRouter.put("/updateProduct/:id", User, updateProduct);
 productRouter.delete("/deleteProduct/:id", User, deleteProduct);
