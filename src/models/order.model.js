@@ -39,6 +39,8 @@ const orderSchema = new mongoose.Schema(
     cancelReason: {
       type: String,
     },
+    returned: { type: Boolean, default: false },
+    returnedReason: String,
   },
   {
     timestamps: true,
