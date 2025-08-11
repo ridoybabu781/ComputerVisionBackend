@@ -39,11 +39,9 @@ const addProduct = async (req, res, next) => {
     };
 
     const uploadedImages = await Promise.all(
-      images.map((image) => {
-        const fileBuffer = fs.readFileSync(image.path);
-        return uploadFromBuffer(fileBuffer);
-      })
+      images.map((image) => uploadFromBuffer(image.buffer))
     );
+
     const imageUrls = uploadedImages.map((r) => r.secure_url);
 
     if (!title || !description || !model || !price) {
