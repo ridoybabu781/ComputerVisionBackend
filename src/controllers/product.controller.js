@@ -16,7 +16,8 @@ const addProduct = async (req, res, next) => {
       return next(createError(401, "You're not allowed to do this"));
     }
 
-    const { title, description, model, price, discountPrice, specs } = req.body;
+    const { title, description, model, price, discountPrice, specs, brand } =
+      req.body;
 
     const specsObj = typeof specs === "string" ? JSON.parse(specs) : specs;
 
@@ -44,7 +45,7 @@ const addProduct = async (req, res, next) => {
 
     const imageUrls = uploadedImages.map((r) => r.secure_url);
 
-    if (!title || !description || !model || !price) {
+    if (!title || !description || !model || !price || !brand) {
       return next(createError(404, "Something is missing"));
     }
 
@@ -54,6 +55,7 @@ const addProduct = async (req, res, next) => {
       model,
       images: imageUrls,
       price,
+      brand,
       discountPrice,
       specs: {
         cpu: specsObj.cpu,
