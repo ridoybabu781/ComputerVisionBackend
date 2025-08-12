@@ -29,7 +29,7 @@ const addProduct = async (req, res, next) => {
     const uploadFromBuffer = (fileBuffer) => {
       return new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
-          { folder: "computerVision/productImages" },
+          { folder: "laptopVision/productImages" },
           (error, result) => {
             if (error) return reject(error);
             resolve(result);
@@ -147,7 +147,7 @@ const updateProduct = async (req, res, next) => {
       for (let imgUrl of removeList) {
         const publicId = imgUrl.split("/").slice(-1)[0].split(".")[0];
         await cloudinary.uploader.destroy(
-          `computerVision/productImages/${publicId}`
+          `laptopVision/productImages/${publicId}`
         );
       }
       product.images = product.images.filter(
@@ -160,7 +160,7 @@ const updateProduct = async (req, res, next) => {
       const uploadFromBuffer = (fileBuffer) => {
         return new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
-            { folder: "computerVision/productImages" },
+            { folder: "laptopVision/productImages" },
             (error, result) => {
               if (error) return reject(error);
               resolve(result);
@@ -224,7 +224,7 @@ const deleteProduct = async (req, res, next) => {
       for (let imgUrl of product.images) {
         const publicId = imgUrl.split("/").slice(-1)[0].split(".")[0];
         await cloudinary.uploader.destroy(
-          `computerVision/productImages/${publicId}`
+          `laptopVision/productImages/${publicId}`
         );
       }
     }
