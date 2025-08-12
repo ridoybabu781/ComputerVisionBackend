@@ -41,11 +41,10 @@ const productSchema = new mongoose.Schema(
       ports: [String],
       others: String,
     },
-    images: [
-      {
-        type: String,
-      },
-    ],
+    images: {
+      productImages: [String],
+      imagePublicIds: [String],
+    },
     stock: {
       type: Number,
       default: 0,

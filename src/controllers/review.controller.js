@@ -54,9 +54,7 @@ const addReview = async (req, res, next) => {
 
     const imageUrls = uploadedImages.map((img) => img.secure_url);
 
-    const publicIds = imageUrls.map(
-      (imageUrl) => imageUrl.split("/").slice(-1)[0].split(".")[0]
-    );
+    const publicIds = uploadedImages.map((r) => r.public_id);
 
     const newReview = await Review.create({
       userId,
@@ -155,9 +153,7 @@ const editReview = async (req, res, next) => {
 
     const imageUrls = updateImages.map((img) => img.secure_url);
 
-    const publicIds = imageUrls.map(
-      (img) => img.split("/").slice(-1)[0].split(".")[0]
-    );
+    const publicIds = updateImages.map((r) => r.public_id);
 
     review.images.imageLinks.push(...imageUrls);
     review.images.publicIds.push(...publicIds);

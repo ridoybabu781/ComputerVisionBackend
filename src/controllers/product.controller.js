@@ -44,6 +44,7 @@ const addProduct = async (req, res, next) => {
     );
 
     const imageUrls = uploadedImages.map((r) => r.secure_url);
+    const imagePublicIds = uploadedImages.map((r) => r.public_id);
 
     if (!title || !description || !model || !price || !brand) {
       return next(createError(404, "Something is missing"));
@@ -53,7 +54,10 @@ const addProduct = async (req, res, next) => {
       title,
       description,
       model,
-      images: imageUrls,
+      images: {
+        productImages: imageUrls,
+        imagePublicIds: imagePublicIds,
+      },
       price,
       brand,
       discountPrice,
@@ -73,11 +77,13 @@ const addProduct = async (req, res, next) => {
     if (!product) {
       return next(createError(400, "Product Creation Failed"));
     }
+
     res.status(200).json({ message: "Product Creation Successful", product });
   } catch (error) {
     next(error);
   }
 };
+
 const getProduct = async (req, res, next) => {
   try {
     const id = req.params.id;
@@ -137,7 +143,6 @@ const updateProduct = async (req, res, next) => {
     }
 
     const specsObj = typeof specs === "string" ? JSON.parse(specs) : specs;
-
     const removeList =
       typeof removeImages === "string"
         ? JSON.parse(removeImages)
@@ -145,14 +150,14 @@ const updateProduct = async (req, res, next) => {
 
     if (removeList.length > 0) {
       for (let imgUrl of removeList) {
-        const publicId = imgUrl.split("/").slice(-1)[0].split(".")[0];
-        await cloudinary.uploader.destroy(
-          `laptopVision/productImages/${publicId}`
-        );
+        const index = product.images.productImages.indexOf(imgUrl);
+        if (index > -1) {
+          const publicId = product.images.imagePublicIds[index];
+          await cloudinary.uploader.destroy(publicId);
+          product.images.productImages.splice(index, 1);
+          product.images.imagePublicIds.splice(index, 1);
+        }
       }
-      product.images = product.images.filter(
-        (img) => !removeList.includes(img)
-      );
     }
 
     const newImages = req.files;
@@ -175,7 +180,10 @@ const updateProduct = async (req, res, next) => {
       );
 
       const newUrls = uploadedResults.map((r) => r.secure_url);
-      product.images.push(...newUrls);
+      const newPublicIds = uploadedResults.map((r) => r.public_id);
+
+      product.images.productImages.push(...newUrls);
+      product.images.imagePublicIds.push(...newPublicIds);
     }
 
     if (title) product.title = title;
