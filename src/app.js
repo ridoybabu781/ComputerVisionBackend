@@ -13,7 +13,7 @@ const userRouter = require("./routes/user.routes");
 const errorHandler = require("./middlewares/errorHandler");
 const productRouter = require("./routes/product.routes");
 const orderRouter = require("./routes/order.routes");
-const { default: router } = require("./routes/payment.routes");
+const router = require("./routes/payment.routes");
 
 // Middleware
 app.use(express.json());
