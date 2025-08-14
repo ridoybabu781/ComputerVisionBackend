@@ -2,11 +2,7 @@ const Order = require("../models/order.model");
 const User = require("../models/user.model");
 const createHttpError = require("http-errors");
 const config = require("../config");
-const qs = require("qs");
-const {
-  handleSSLCommerzPayment,
-  handleCODPayment,
-} = require("./payment.controller");
+const sendEmail = require("../utils/sendEmail");
 
 const addOrder = async (req, res, next) => {
   try {
@@ -69,6 +65,16 @@ const addOrder = async (req, res, next) => {
       return next(createHttpError(400, "Order Creation Failed"));
     }
 
+    const htmlContent = `
+      <h2>Order Placed Successfully!</h2>
+      <p>Hi ${user.name},</p>
+      <p>Your order with ID <b>${order._id}</b> has been submitted successfully.</p>
+      <p>Payment Method: <b>${paymentMethod}</b></p>
+      <p>Please confirm your payment to complete the order.</p>
+      <p>Thank you for shopping with us!</p>
+    `;
+    await sendEmail(user.email, "Your Order has been placed!", htmlContent);
+
     res.status(201).json({ message: "Order Creation Successfull", order });
   } catch (error) {
     next(error);
@@ -107,18 +113,46 @@ const cancelOrder = async (req, res, next) => {
     const userId = req.userId;
     const orderId = req.params.id;
 
-    const { status, cancelReason } = req.body;
+    if (!userId) return next(createHttpError(401, "Unauthorized"));
 
-    const order = await Order.findByIdAndUpdate(
-      orderId,
-      { status, cancelReason },
-      { new: true }
-    );
+    const { cancelReason } = req.body;
+    if (!cancelReason)
+      return next(createHttpError(400, "Cancel reason is required"));
 
-    if (!order) {
-      return next(createHttpError(400, "Something went wrong"));
+    const order = await Order.findById(orderId);
+
+    if (!order) return next(createHttpError(404, "Order not found"));
+
+    if (order.user.toString() !== userId.toString()) {
+      return next(
+        createHttpError(403, "You're not allowed to cancel this order")
+      );
     }
-    res.status(200).json({ message: "Canceled successfully", order });
+
+    if (["Shipped", "Delivered"].includes(order.status)) {
+      return next(
+        createHttpError(
+          400,
+          "Cannot cancel order after it has been shipped or delivered"
+        )
+      );
+    }
+
+    order.status = "Cancelled";
+    order.cancelReason = cancelReason;
+    await order.save();
+
+    const user = await User.findById(userId);
+    const htmlContent = `
+      <h2>Order Cancellation</h2>
+      <p>Hi ${user.name},</p>
+      <p>Your order with ID <b>${order._id}</b> has been canceled successfully.</p>
+      <p>Reason: ${cancelReason}</p>
+      <p>If this is a mistake, please contact support immediately.</p>
+    `;
+    await sendEmail(user.email, "Your Order has been canceled", htmlContent);
+
+    res.status(200).json({ message: "Order canceled successfully", order });
   } catch (error) {
     next(error);
   }

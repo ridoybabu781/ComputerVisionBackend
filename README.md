@@ -1,0 +1,257 @@
+# Laptop Vision Backend
+
+A backend service for Laptop Vision tasks, providing APIs for user management, product catalog, orders, reviews, and payment integrations (COD & SSLCommerz). Built with Node.js, Express, and MongoDB.
+
+---
+
+## Features
+
+- **User Management**
+
+  - Register, login, logout
+  - Profile fetch & update
+  - Password reset and verification code system
+  - Profile picture upload
+  - Admin-only operations: block/unblock users, delete profile, create admins
+
+- **Products**
+
+  - Add, update, delete products (Admin only)
+  - Upload multiple product images with Cloudinary integration
+  - Product specifications stored as structured JSON
+
+- **Orders**
+
+  - Place orders for one or more products
+  - Payment options: COD, SSLCommerz
+  - Cancel orders with reason (limits applied for shipped/delivered orders)
+  - Order tracking (Pending, Processing, Shipped, Delivered, Cancelled)
+
+- **Reviews**
+
+  - Add, edit, delete reviews with images
+  - Fetch product-specific or user-specific reviews
+
+- **Security**
+
+  - JWT authentication
+  - Helmet for HTTP headers security
+  - Input validation using Joi
+  - Password hashing using bcrypt
+
+- **Modular & Scalable**
+
+  - Separate routes and controllers for users, products, orders, reviews, and payments
+  - Centralized error handling
+
+---
+
+## Installation
+
+```bash
+git clone https://github.com/ridoybabu781/ComputerVisionBackend.git
+cd ComputerVisionBackend
+npm install
+```
+
+### Environment Variables
+
+Create a `.env` file with the following variables:
+
+```env
+PORT = 5050
+DB_URL = <Mongo db url here>
+JWT_SECRET = <JWT SECRET HERE>
+
+
+CNAME=<Cloudinary name>
+CAPI_KEY =<cloudinary api key>
+CAPI_SECRET =<cloudinary api secret>
+
+GMAIL_USER= <user gmail , from where you'll send email>
+GMAIL_PASS = <app pass for the gmail>
+
+SSLC_STORE_ID=<ssl commerz store id>
+SSLC_STORE_PASS=<ssl commerz store password>
+
+CORS_ORIGIN = http://localhost:5173
+```
+
+---
+
+## Running the Server
+
+```bash
+npm run dev
+```
+
+The backend will run on `http://localhost:5050`.
+
+---
+
+## API Routes
+
+### User Routes
+
+| Method | Route                                   | Description                 |
+| ------ | --------------------------------------- | --------------------------- |
+| POST   | /api/auth/sendCode                      | Send verification code      |
+| POST   | /api/auth/register                      | Register user               |
+| POST   | /api/auth/login                         | Login user                  |
+| GET    | /api/auth/profile                       | Get user profile            |
+| PUT    | /api/auth/updateProfile                 | Update user profile         |
+| PUT    | /api/auth/updatePassword                | Update user password        |
+| PUT    | /api/auth/updateProfilePicture          | Upload profile picture      |
+| POST   | /api/auth/sendForgetPassCode            | Send password reset code    |
+| POST   | /api/auth/forgetPassword                | Reset password              |
+| POST   | /api/auth/logout                        | Logout user                 |
+| POST   | /api/auth/admin/rr/rsc-create-bro-admin | Create admin                |
+| POST   | /api/auth/deleteProfile                 | Delete profile (admin/user) |
+| POST   | /api/auth/blockProfile/\:id             | Block user (admin only)     |
+| POST   | /api/auth/unblockProfile/\:id           | Unblock user (admin only)   |
+| GET    | /api/auth/getBlockedUser                | Get blocked users           |
+
+---
+
+### Product Routes
+
+| Method | Route                           | Description                 |
+| ------ | ------------------------------- | --------------------------- |
+| POST   | /api/product/addProduct         | Add product (Admin only)    |
+| GET    | /api/product/getProduct/\:id    | Get product by ID           |
+| GET    | /api/product/getProducts        | Get all products            |
+| PUT    | /api/product/updateProduct/\:id | Update product (Admin only) |
+| DELETE | /api/product/deleteProduct/\:id | Delete product (Admin only) |
+
+---
+
+### Order Routes
+
+| Method | Route                  | Description                      |
+| ------ | ---------------------- | -------------------------------- |
+| POST   | /api/order/createOrder | Place a new order                |
+| PUT    | /api/order/updateOrder | Update order status (Admin only) |
+| POST   | /api/order/cancelOrder | Cancel order (user/admin)        |
+
+---
+
+### Payment Routes
+
+| Method   | Route                             | Description                 |
+| -------- | --------------------------------- | --------------------------- |
+| POST     | /api/payment/cod/\:orderId        | Cash on delivery payment    |
+| POST     | /api/payment/sslcommerz/\:orderId | Initiate SSLCommerz payment |
+| GET/POST | /api/payment/success/\:orderId    | Payment success callback    |
+| GET/POST | /api/payment/fail/\:orderId       | Payment failed callback     |
+| GET/POST | /api/payment/cancel/\:orderId     | Payment canceled callback   |
+
+---
+
+### Review Routes
+
+| Method | Route                      | Description                      |
+| ------ | -------------------------- | -------------------------------- |
+| POST   | /api/review/addReview/\:id | Add review for a product         |
+| POST   | /api/review/removeReview   | Remove review                    |
+| POST   | /api/review/editReview     | Edit review with optional images |
+| POST   | /api/review/myReviews      | Fetch user reviews               |
+| POST   | /api/review/productReviews | Fetch product reviews            |
+
+---
+
+## Models
+
+### **User**
+
+Represents a user or admin in the system.
+
+| Field        | Type   | Required | Description                                          |
+| ------------ | ------ | -------- | ---------------------------------------------------- |
+| `name`       | String | Yes      | Full name of the user                                |
+| `email`      | String | Yes      | Unique email for login                               |
+| `password`   | String | Yes      | Hashed password                                      |
+| `role`       | String | Yes      | User role: `"user"` or `"admin"` (default: `"user"`) |
+| `profilePic` | String | No       | URL of profile picture                               |
+| `address`    | String | No       | User address                                         |
+| `age`        | Number | No       | User age                                             |
+| `birthDate`  | Date   | No       | Date of birth                                        |
+| `gender`     | String | No       | `"male"`, `"female"`, or `"other"`                   |
+| `phone`      | Number | No       | Phone number                                         |
+
+---
+
+### **Product**
+
+Represents products that users can buy.
+
+| Field           | Type   | Required | Description                                                                                          |
+| --------------- | ------ | -------- | ---------------------------------------------------------------------------------------------------- |
+| `title`         | String | Yes      | Product name                                                                                         |
+| `category`      | String | No       | Product category (default: `"Other"`)                                                                |
+| `brand`         | String | Yes      | Product brand                                                                                        |
+| `model`         | String | No       | Model name or number                                                                                 |
+| `description`   | String | No       | Product description                                                                                  |
+| `price`         | Number | Yes      | Selling price                                                                                        |
+| `discountPrice` | Number | No       | Discounted price                                                                                     |
+| `specs`         | Object | No       | Product specifications including cpu, ram, storage, gpu, display, battery, os, ports (array), others |
+| `images`        | Object | No       | `productImages: [String]` (URLs), `imagePublicIds: [String]` (Cloudinary IDs)                        |
+| `stock`         | Number | No       | Number of items in stock                                                                             |
+
+---
+
+### **Order**
+
+Represents an order placed by a user.
+
+| Field             | Type             | Required | Description                                                                                   |
+| ----------------- | ---------------- | -------- | --------------------------------------------------------------------------------------------- |
+| `userId`          | ObjectId (User)  | Yes      | Reference to the user who placed the order                                                    |
+| `orderItems`      | Array of Objects | Yes      | Each item includes `product` (ObjectId), `qty` (Number), `price` (Number)                     |
+| `shippingAddress` | Object           | Yes      | Contains `fullName`, `phone`, `address`, `city`, `postalCode`, `country`                      |
+| `paymentMethod`   | String           | Yes      | `"COD"`, `"Bkash"`, `"Nagad"`, `"SSLCommerz"`, `"Stripe"`, `"PayPal"`                         |
+| `status`          | String           | Yes      | `"Pending"`, `"Processing"`, `"Shipped"`, `"Delivered"`, `"Cancelled"` (default: `"Pending"`) |
+| `itemsPrice`      | Number           | Yes      | Total price of items (without shipping)                                                       |
+| `shippingPrice`   | Number           | Yes      | Shipping cost                                                                                 |
+| `totalPrice`      | Number           | Yes      | Total price including shipping                                                                |
+| `isPaid`          | Boolean          | No       | Whether the order is paid                                                                     |
+| `paidAt`          | Date             | No       | Payment timestamp                                                                             |
+| `isDelivered`     | Boolean          | No       | Whether the order is delivered                                                                |
+| `deliveredAt`     | Date             | No       | Delivery timestamp                                                                            |
+| `cancelReason`    | String           | No       | Reason for cancellation                                                                       |
+| `returned`        | Boolean          | No       | Whether the order is returned                                                                 |
+| `returnedReason`  | String           | No       | Reason for return                                                                             |
+
+---
+
+### **Review**
+
+Represents a review submitted by a user for a product.
+
+| Field       | Type               | Required | Description                                                       |
+| ----------- | ------------------ | -------- | ----------------------------------------------------------------- |
+| `userId`    | ObjectId (User)    | Yes      | Reference to the user                                             |
+| `productId` | ObjectId (Product) | Yes      | Reference to the product                                          |
+| `rating`    | Number             | Yes      | Rating given (default: 1)                                         |
+| `review`    | String             | Yes      | Text review                                                       |
+| `images`    | Object             | No       | `imageLinks: [String]`, `publicIds: [String]` for uploaded images |
+
+---
+
+### **VerificationCode**
+
+Stores verification codes for user registration or password reset.
+
+| Field              | Type   | Required | Description          |
+| ------------------ | ------ | -------- | -------------------- |
+| `email`            | String | Yes      | User email           |
+| `verificationCode` | String | Yes      | Code sent to user    |
+| `expiresIn`        | Date   | Yes      | Expiration timestamp |
+
+---
+
+## Notes
+
+- All authenticated routes require a valid JWT token in the request headers.
+- Image uploads are handled via **Cloudinary**.
+- Payments can be extended to include Bkash, Nagad, Stripe, and PayPal.
+- Error handling is centralized using `errorHandler` middleware.

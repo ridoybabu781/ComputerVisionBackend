@@ -104,6 +104,10 @@ const login = async (req, res, next) => {
     const user = await User.findOne({ email });
     if (!user) return next(createError(404, "User not found"));
 
+    if (user.isBlocked) {
+      return next(createError(401, "Your Account is blocked"));
+    }
+
     const passMatch = await bcrypt.compare(password, user.password);
     if (!passMatch) return next(createError(401, "Password does not match"));
 

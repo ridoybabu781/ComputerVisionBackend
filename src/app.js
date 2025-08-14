@@ -1,7 +1,7 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-const createError = require("http-errors");
+const helmet = require("helmet");
 
 const app = express();
 
@@ -25,6 +25,7 @@ app.use(
     credentials: true,
   })
 );
+app.use(helmet());
 
 // Routes
 app.use("/api/auth", userRouter);

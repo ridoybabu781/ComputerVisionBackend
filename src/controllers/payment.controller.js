@@ -4,6 +4,7 @@ const config = require("../config");
 const User = require("../models/user.model");
 const createHttpError = require("http-errors");
 const Order = require("../models/order.model");
+const sendEmail = require("../utils/sendEmail");
 
 const handleCODPayment = async (req, res, next) => {
   try {
@@ -76,22 +77,57 @@ const handleSSLCommerzPayment = async (req, res, next) => {
 const paymentSuccess = async (req, res, next) => {
   try {
     const { orderId } = req.params;
-    await Order.findByIdAndUpdate(orderId, {
-      isPaid: true,
-      paidAt: new Date(),
-    });
+
+    const order = await Order.findByIdAndUpdate(
+      orderId,
+      {
+        isPaid: true,
+        paidAt: new Date(),
+        status: "Paid",
+      },
+      { new: true }
+    );
+
+    const user = await User.findById(order.userId);
+
+    const htmlContent = `
+      <h2>Payment Successful!</h2>
+      <p>Hi ${user.name},</p>
+      <p>Your payment for order ID <b>${order._id}</b> was successful.</p>
+      <p>Thank you for shopping with us!</p>
+    `;
+
+    await sendEmail(user.email, "Payment Successful", htmlContent);
+
     return res.redirect("/payment/success");
   } catch (error) {
     next(error);
   }
 };
 
-const paymentFail = async (req, res) => {
+const paymentFail = async (req, res, next) => {
   try {
     const { orderId } = req.params;
-    await Order.findByIdAndUpdate(orderId, {
-      isPaid: false,
-    });
+
+    const order = await Order.findByIdAndUpdate(
+      orderId,
+      { isPaid: false, status: "Payment Failed" },
+      { new: true }
+    );
+
+    if (!order) return next(createHttpError(404, "Order not found"));
+
+    const user = await User.findById(order.userId);
+
+    const htmlContent = `
+      <h2>Payment Failed</h2>
+      <p>Hi ${user.name},</p>
+      <p>Your payment for order ID <b>${order._id}</b> could not be processed.</p>
+      <p>Please try again or contact support if the problem persists.</p>
+    `;
+
+    await sendEmail(user.email, "Payment Failed", htmlContent);
+
     return res.redirect("/payment/fail");
   } catch (error) {
     next(error);
