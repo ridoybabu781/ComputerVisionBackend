@@ -9,6 +9,7 @@ const config = {
   cName: process.env.CNAME,
   cApi: process.env.CAPI_KEY,
   cApi_Secret: process.env.CAPI_SECRET,
+  backendUrl: "http://localhost:5050",
 
   store_id: process.env.SSLC_STORE_ID,
   store_passwd: process.env.SSLC_STORE_PASS,

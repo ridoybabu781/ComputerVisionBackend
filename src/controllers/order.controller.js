@@ -36,7 +36,7 @@ const addOrder = async (req, res, next) => {
         typeof orderItems === "string" ? JSON.parse(orderItems) : orderItems;
 
       allOrderItems = parseItems.map((item) => ({
-        product: item.productId || item._id,
+        product: item.product,
         qty: item.qty,
         price: item.price,
       }));
@@ -54,7 +54,7 @@ const addOrder = async (req, res, next) => {
     };
 
     const order = await Order.create({
-      user: userId,
+      userId,
       orderItems: allOrderItems,
       shippingAddress: address,
       paymentMethod,

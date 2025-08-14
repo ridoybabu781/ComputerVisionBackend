@@ -12,8 +12,8 @@ const {
 router.post("/cod/:orderId", userCheck, handleCODPayment);
 router.post("/sslcommerz/:orderId", userCheck, handleSSLCommerzPayment);
 
-router.get("/success/:orderId", paymentSuccess);
-router.get("/fail/:orderId", paymentFail);
-router.get("/cancel/:orderId", paymentCancel);
+router.route("/success/:orderId").get(paymentSuccess).post(paymentSuccess);
+router.route("/fail/:orderId").get(paymentFail).post(paymentFail);
+router.route("/cancel/:orderId").get(paymentCancel).post(paymentCancel);
 
 module.exports = router;
