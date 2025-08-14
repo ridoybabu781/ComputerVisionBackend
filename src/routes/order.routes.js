@@ -6,8 +6,10 @@ const {
   cancelOrder,
   updateOrder,
 } = require("../controllers/order.controller");
+const validate = require("../middlewares/validate");
+const orderValidator = require("../valitations/order.validate");
 
-orderRouter.post("/createOrder", User, addOrder);
+orderRouter.post("/createOrder", User, validate(orderValidator), addOrder);
 orderRouter.put("/updateOrder", User, updateOrder);
 orderRouter.post("/cancelOrder", User, cancelOrder);
 

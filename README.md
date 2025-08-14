@@ -93,69 +93,74 @@ The backend will run on `http://localhost:5050`.
 
 ### User Routes
 
-| Method | Route                                   | Description                 |
-| ------ | --------------------------------------- | --------------------------- |
-| POST   | /api/auth/sendCode                      | Send verification code      |
-| POST   | /api/auth/register                      | Register user               |
-| POST   | /api/auth/login                         | Login user                  |
-| GET    | /api/auth/profile                       | Get user profile            |
-| PUT    | /api/auth/updateProfile                 | Update user profile         |
-| PUT    | /api/auth/updatePassword                | Update user password        |
-| PUT    | /api/auth/updateProfilePicture          | Upload profile picture      |
-| POST   | /api/auth/sendForgetPassCode            | Send password reset code    |
-| POST   | /api/auth/forgetPassword                | Reset password              |
-| POST   | /api/auth/logout                        | Logout user                 |
-| POST   | /api/auth/admin/rr/rsc-create-bro-admin | Create admin                |
-| POST   | /api/auth/deleteProfile                 | Delete profile (admin/user) |
-| POST   | /api/auth/blockProfile/\:id             | Block user (admin only)     |
-| POST   | /api/auth/unblockProfile/\:id           | Unblock user (admin only)   |
-| GET    | /api/auth/getBlockedUser                | Get blocked users           |
+| Method | Endpoint                         | Description                     | Body / Params                                                   |
+| ------ | -------------------------------- | ------------------------------- | --------------------------------------------------------------- |
+| POST   | `/api/auth/sendCode`             | Send verification code to email | `email` (body)                                                  |
+| POST   | `/api/auth/register`             | Create user after verification  | `name`, `email`, `password`, `verificationCode` (body)          |
+| POST   | `/api/auth/login`                | Login user                      | `email`, `password` (body)                                      |
+| GET    | `/api/auth/profile`              | Get user profile                | Authenticated (`token`)                                         |
+| PUT    | `/api/auth/updateProfile`        | Update user profile             | `name`, `birthDate`, `age`, `gender`, `address`, `phone` (body) |
+| PUT    | `/api/auth/updateProfilePicture` | Update profile picture          | `profilePic` (form-data)                                        |
+| PUT    | `/api/auth/updatePassword`       | Update password                 | `oldPass`, `newPass` (body)                                     |
+| POST   | `/api/auth/sendForgetPassCode`   | Send code for password reset    | `email` (body)                                                  |
+| POST   | `/api/auth/forgetPassword`       | Reset password using code       | `email`, `verificationCode`, `newPassword` (body)               |
+| POST   | `/api/auth/logout`               | Logout user                     | Authenticated (`token`)                                         |
+
+### Admin Rotues
+
+| Method | Endpoint                                  | Description           | Body / Params                                              |
+| ------ | ----------------------------------------- | --------------------- | ---------------------------------------------------------- |
+| POST   | `/api/auth/admin/rr/rsc-create-bro-admin` | Create admin          | `name`, `email`, `password` (body)                         |
+| POST   | `/api/auth/deleteProfile`                 | Delete user           | Authenticated (`token`), `profileId` (body/param optional) |
+| POST   | `/api/auth/blockProfile/:id`              | Block user            | `id` (param), Authenticated admin                          |
+| POST   | `/api/auth/unblockProfile/:id`            | Unblock user          | `id` (param), Authenticated admin                          |
+| GET    | `/api/auth/getBlockedUser`                | Get all blocked users | Authenticated admin                                        |
 
 ---
 
 ### Product Routes
 
-| Method | Route                           | Description                 |
-| ------ | ------------------------------- | --------------------------- |
-| POST   | /api/product/addProduct         | Add product (Admin only)    |
-| GET    | /api/product/getProduct/\:id    | Get product by ID           |
-| GET    | /api/product/getProducts        | Get all products            |
-| PUT    | /api/product/updateProduct/\:id | Update product (Admin only) |
-| DELETE | /api/product/deleteProduct/\:id | Delete product (Admin only) |
+| Method | Endpoint                         | Description        | Body / Params                                                                                                                        |
+| ------ | -------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| POST   | `/api/product/addProduct`        | Add new product    | `title`, `category`, `brand`, `model`, `description`, `price`, `discountPrice`, `specs`, `images`, `stock` (body + form-data images) |
+| GET    | `/api/product/getProduct/:id`    | Get single product | `id` (param)                                                                                                                         |
+| GET    | `/api/product/getProducts`       | Get all products   | Query params optional (filtering/pagination)                                                                                         |
+| PUT    | `/api/product/updateProduct/:id` | Update product     | `id` (param), updated fields (body + form-data images)                                                                               |
+| DELETE | `/api/product/deleteProduct/:id` | Delete product     | `id` (param)                                                                                                                         |
 
 ---
 
 ### Order Routes
 
-| Method | Route                  | Description                      |
-| ------ | ---------------------- | -------------------------------- |
-| POST   | /api/order/createOrder | Place a new order                |
-| PUT    | /api/order/updateOrder | Update order status (Admin only) |
-| POST   | /api/order/cancelOrder | Cancel order (user/admin)        |
+| Method | Endpoint                     | Description                      | Body / Params                                                                                        |
+| ------ | ---------------------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| POST   | `/api/order/createOrder`     | Create order                     | `orderItems`, `shippingAddress`, `paymentMethod`, `itemsPrice`, `shippingPrice`, `totalPrice` (body) |
+| PUT    | `/api/order/updateOrder/:id` | Update order status (Admin only) | `id` (param), `status` (body)                                                                        |
+| POST   | `/api/order/cancelOrder/:id` | Cancel order                     | `id` (param), `cancelReason` (body), must be order owner                                             |
 
 ---
 
 ### Payment Routes
 
-| Method   | Route                             | Description                 |
-| -------- | --------------------------------- | --------------------------- |
-| POST     | /api/payment/cod/\:orderId        | Cash on delivery payment    |
-| POST     | /api/payment/sslcommerz/\:orderId | Initiate SSLCommerz payment |
-| GET/POST | /api/payment/success/\:orderId    | Payment success callback    |
-| GET/POST | /api/payment/fail/\:orderId       | Payment failed callback     |
-| GET/POST | /api/payment/cancel/\:orderId     | Payment canceled callback   |
+| Method     | Endpoint                           | Description                | Body / Params                    |
+| ---------- | ---------------------------------- | -------------------------- | -------------------------------- |
+| POST       | `/api/payment/cod/:orderId`        | Process Cash on Delivery   | `orderId` (param), Authenticated |
+| POST       | `/api/payment/sslcommerz/:orderId` | Process SSLCommerz payment | `orderId` (param), Authenticated |
+| GET / POST | `/api/payment/success/:orderId`    | Payment success callback   | `orderId` (param)                |
+| GET / POST | `/api/payment/fail/:orderId`       | Payment failed callback    | `orderId` (param)                |
+| GET / POST | `/api/payment/cancel/:orderId`     | Payment cancelled callback | `orderId` (param)                |
 
 ---
 
 ### Review Routes
 
-| Method | Route                      | Description                      |
-| ------ | -------------------------- | -------------------------------- |
-| POST   | /api/review/addReview/\:id | Add review for a product         |
-| POST   | /api/review/removeReview   | Remove review                    |
-| POST   | /api/review/editReview     | Edit review with optional images |
-| POST   | /api/review/myReviews      | Fetch user reviews               |
-| POST   | /api/review/productReviews | Fetch product reviews            |
+| Method | Endpoint                     | Description             | Body / Params                                                           |
+| ------ | ---------------------------- | ----------------------- | ----------------------------------------------------------------------- |
+| POST   | `/api/review/addReview/:id`  | Add review to product   | `id` (productId param), `rating`, `review`, `images` (body + form-data) |
+| POST   | `/api/review/removeReview`   | Remove review           | `reviewId` (body)                                                       |
+| POST   | `/api/review/editReview`     | Edit review             | `reviewId` (body), `rating`, `review`, `images` (body + form-data)      |
+| POST   | `/api/review/myReviews`      | Get my reviews          | Authenticated user                                                      |
+| POST   | `/api/review/productReviews` | Get reviews for product | `productId` (body)                                                      |
 
 ---
 

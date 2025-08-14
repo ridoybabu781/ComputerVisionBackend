@@ -8,13 +8,27 @@ const {
 } = require("../controllers/review.controller");
 const User = require("../middlewares/User");
 const upload = require("../utils/multer");
+const validate = require("../middlewares/validate");
+const reviewValidation = require("../valitations/review.validate");
 
 const reviewRouter = express.Router();
 
-reviewRouter.post("/addReview/:id", User, upload.array("images", 5), addReview);
+reviewRouter.post(
+  "/addReview/:id",
+  User,
+  upload.array("images", 5),
+  validate(reviewValidation),
+  addReview
+);
 reviewRouter.post("/removeReview", User, removeReview);
-reviewRouter.post("/editReview", User, upload.array("images", 5), editReview);
-reviewRouter.post("/myReviews", User, myReviews);
-reviewRouter.post("/productReviews", productReviews);
+reviewRouter.put(
+  "/editReview",
+  User,
+  upload.array("images", 5),
+  validate(reviewValidation),
+  editReview
+);
+reviewRouter.get("/myReviews", User, myReviews);
+reviewRouter.get("/productReviews", productReviews);
 
 module.exports = reviewRouter;
