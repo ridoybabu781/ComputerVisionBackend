@@ -13,6 +13,7 @@ const userRouter = require("./routes/user.routes");
 const errorHandler = require("./middlewares/errorHandler");
 const productRouter = require("./routes/product.routes");
 const orderRouter = require("./routes/order.routes");
+const { default: router } = require("./routes/payment.routes");
 
 // Middleware
 app.use(express.json());
@@ -29,6 +30,7 @@ app.use(
 app.use("/api/auth", userRouter);
 app.use("/api/product", productRouter);
 app.use("/api/order", orderRouter);
+app.use("/api/payment", router);
 
 // Centralized error handler
 app.use(errorHandler);

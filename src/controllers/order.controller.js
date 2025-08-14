@@ -1,8 +1,12 @@
 const Order = require("../models/order.model");
-const User = require("../models.user.model");
+const User = require("../models/user.model");
 const createHttpError = require("http-errors");
 const config = require("../config");
 const qs = require("qs");
+const {
+  handleSSLCommerzPayment,
+  handleCODPayment,
+} = require("./payment.controller");
 
 const addOrder = async (req, res, next) => {
   try {
@@ -25,11 +29,34 @@ const addOrder = async (req, res, next) => {
       return next(createHttpError(400, "Order items are required"));
     }
 
-    // Create order first with isPaid false, status Pending
+    let allOrderItems = [];
+
+    try {
+      const parseItems =
+        typeof orderItems === "string" ? JSON.parse(orderItems) : orderItems;
+
+      allOrderItems = parseItems.map((item) => ({
+        product: item.productId || item._id,
+        qty: item.qty,
+        price: item.price,
+      }));
+    } catch (error) {
+      return next(createHttpError(400, "Invalid order items format"));
+    }
+
+    let address = {
+      fullName: shippingAddress.fullName,
+      phone: shippingAddress.phone,
+      address: shippingAddress.address,
+      city: shippingAddress.city,
+      postalCode: shippingAddress.postalCode,
+      country: shippingAddress.country,
+    };
+
     const order = await Order.create({
       user: userId,
-      orderItems,
-      shippingAddress,
+      orderItems: allOrderItems,
+      shippingAddress: address,
       paymentMethod,
       itemsPrice,
       shippingPrice,
@@ -42,44 +69,7 @@ const addOrder = async (req, res, next) => {
       return next(createHttpError(400, "Order Creation Failed"));
     }
 
-    if (paymentMethod === "COD") {
-      return res.status(200).json({
-        message: "Order Completed Successfully. Used Cash on Delivery",
-        order,
-      });
-    }
-
-    if (paymentMethod === "SSLCommerz") {
-      const transactionId = "txn_" + Date.now();
-
-      const data = {
-        store_id: config.store_id,
-        store_passwd: config.store_passwd,
-        total_amount: totalPrice,
-        currency: "BDT",
-        tran_id: transactionId,
-        success_url: `https://laptopvisionbackend.onrender.com/api/payment/success?orderId=${order._id}`,
-        fail_url: `https://laptopvisionbackend.onrender.com/api/payment/fail?orderId=${order._id}`,
-        cancel_url: `https://laptopvisionbackend.onrender.com/api/payment/cancel?orderId=${order._id}`,
-        cus_name: user.name,
-        cus_email: user.email,
-        product_name: orderItems.map((item) => item.product.name).join(", "),
-        product_category: "General",
-        product_profile: "general",
-        value_a: order._id.toString(),
-      };
-
-      const SSLCommerz_API =
-        "https://sandbox.sslcommerz.com/gwprocess/v3/api.php";
-
-      const response = await axios.post(SSLCommerz_API, qs.stringify(data), {
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      });
-
-      return res.status(200).json({ url: response.data.GatewayPageURL });
-    }
-
-    return res.status(400).json({ message: "Unsupported payment method" });
+    res.status(201).json({ message: "Order Creation Successfull", order });
   } catch (error) {
     next(error);
   }
