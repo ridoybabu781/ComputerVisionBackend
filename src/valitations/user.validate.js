@@ -35,4 +35,5 @@ module.exports = {
   registerValidation,
   updateProfileValidation,
   updateProfilePicValidation,
+  loginValidation,
 };

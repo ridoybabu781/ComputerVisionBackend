@@ -24,13 +24,14 @@ const {
   registerValidation,
   updateProfileValidation,
   updateProfilePicValidation,
+  loginValidation,
 } = require("../valitations/user.validate");
 const verificationCodeValidation = require("../valitations/verificationCode.validate");
 const router = require("express").Router();
 
 router.post("/sendCode", validate(verificationCodeValidation), sendCode);
 router.post("/register", validate(registerValidation), createUser);
-router.post("/login", login);
+router.post("/login", validate(loginValidation), login);
 router.get("/profile", userCheck, profile);
 router.put(
   "/updateProfile",
