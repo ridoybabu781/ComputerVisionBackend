@@ -3,7 +3,7 @@ require("dotenv").config();
 
 const userCheck = async (req, res, next) => {
   try {
-    const token = req.cookies.token || req.headers.token.split(" ")[1];
+    const token = req.cookies.accessToken || req.headers.token.split(" ")[1];
     if (!token) {
       throw new Error("Unauthorized");
     }

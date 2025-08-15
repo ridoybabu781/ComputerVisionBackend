@@ -105,6 +105,7 @@ The backend will run on `http://localhost:5050`.
 | POST   | `/api/auth/sendForgetPassCode`   | Send code for password reset    | `email` (body)                                                  |
 | POST   | `/api/auth/forgetPassword`       | Reset password using code       | `email`, `verificationCode`, `newPassword` (body)               |
 | POST   | `/api/auth/logout`               | Logout user                     | Authenticated (`token`)                                         |
+| POST   | `/api/auth/refreshAccessToken`   | Refresh Access Token            |                                                                 |
 
 ### Admin Rotues
 

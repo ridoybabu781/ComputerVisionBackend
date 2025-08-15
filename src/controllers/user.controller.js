@@ -114,12 +114,59 @@ const login = async (req, res, next) => {
     const userData = user.toObject();
     delete userData.password;
 
-    const token = generateToken({ id: userData._id, email: userData.email });
+    const accessToken = generateToken(
+      { id: userData._id, email: userData.email },
+      "1h"
+    );
+    const refreshToken = generateToken(
+      { id: userData._id, email: userData.email },
+      "7d"
+    );
+
+    await User.findByIdAndUpdate(userData._id, { refreshToken });
 
     res
       .status(200)
-      .cookie("token", token, { httpOnly: true, secure: true })
+      .cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: true,
+        maxAge: 60 * 60 * 1000,
+      })
+      .cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
       .json({ user: userData, token, message: "Logged in successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const refreshAccessToken = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.cookies;
+    if (!refreshToken) return next(createError(401, "No refresh token"));
+
+    const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded.id);
+    if (!user || user.refreshToken !== refreshToken) {
+      return next(createError(401, "Invalid refresh token"));
+    }
+
+    const newAccessToken = generateToken(
+      { id: user._id, email: user.email },
+      "1h"
+    );
+
+    res
+      .cookie("accessToken", newAccessToken, {
+        httpOnly: true,
+        secure: true,
+        maxAge: 60 * 60 * 1000,
+      })
+      .json({ message: "Token refreshed" });
   } catch (error) {
     next(error);
   }
@@ -397,7 +444,11 @@ const getBlockedProfile = async (req, res, next) => {
 
 const logout = async (req, res, next) => {
   try {
-    res.clearCookie("token", {
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: true,
+    });
+    res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: true,
     });
@@ -423,4 +474,5 @@ module.exports = {
   blockProfile,
   unBlockProfile,
   getBlockedProfile,
+  refreshAccessToken,
 };

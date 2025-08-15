@@ -11,7 +11,7 @@ const productValidation = Joi.object({
     "string.empty": "Brand cannot be empty",
   }),
   model: Joi.string().allow("").optional(),
-  description: Joi.string().allow("").optional(),
+  description: Joi.string().allow("").required(),
   price: Joi.number().min(0).required().messages({
     "any.required": "Price is required",
     "number.min": "Price cannot be negative",

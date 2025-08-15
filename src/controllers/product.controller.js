@@ -46,7 +46,7 @@ const addProduct = async (req, res, next) => {
     const imageUrls = uploadedImages.map((r) => r.secure_url);
     const imagePublicIds = uploadedImages.map((r) => r.public_id);
 
-    if (!title || !description || !model || !price || !brand) {
+    if (!title || !description || !price || !brand) {
       return next(createError(404, "Something is missing"));
     }
 

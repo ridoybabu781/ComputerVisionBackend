@@ -15,6 +15,7 @@ const {
   blockProfile,
   unBlockProfile,
   getBlockedProfile,
+  refreshAccessToken,
 } = require("../controllers/user.controller");
 
 const userCheck = require("../middlewares/User");
@@ -32,6 +33,7 @@ const router = require("express").Router();
 router.post("/sendCode", validate(verificationCodeValidation), sendCode);
 router.post("/register", validate(registerValidation), createUser);
 router.post("/login", validate(loginValidation), login);
+router.post("/refreshAccessToken", refreshAccessToken);
 router.get("/profile", userCheck, profile);
 router.put(
   "/updateProfile",

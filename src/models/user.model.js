@@ -43,6 +43,7 @@ const UserSchema = new mongoose.Schema(
     phone: {
       type: Number,
     },
+    refreshToken: String,
   },
   { timestamps: true }
 );
