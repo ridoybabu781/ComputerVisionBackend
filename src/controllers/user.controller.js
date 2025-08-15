@@ -84,12 +84,37 @@ const createUser = async (req, res, next) => {
     const userData = user.toObject();
     delete userData.password;
 
-    const token = generateToken({ id: userData._id, email: userData.email });
+    const accessToken = generateToken(
+      { id: userData._id, email: userData.email },
+      "1h"
+    );
+    const refreshToken = generateToken(
+      { id: userData._id, email: userData.email },
+      "7d"
+    );
+
+    await User.findByIdAndUpdate(userData._id, { refreshToken });
 
     res
       .status(200)
-      .cookie("token", token, { httpOnly: true, secure: true })
-      .json({ user: userData, token, message: "Account created successfully" });
+      .cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        maxAge: 60 * 60 * 1000,
+      })
+      .cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      .json({
+        success: true,
+        user: userData,
+        accessToken,
+        message: "Account created successfully",
+      });
   } catch (error) {
     next(error);
   }
@@ -137,7 +162,7 @@ const login = async (req, res, next) => {
         secure: true,
         maxAge: 7 * 24 * 60 * 60 * 1000,
       })
-      .json({ user: userData, token, message: "Logged in successfully" });
+      .json({ user: userData, accessToken, message: "Logged in successfully" });
   } catch (error) {
     next(error);
   }
