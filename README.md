@@ -121,13 +121,13 @@ The backend will run on `http://localhost:5050`.
 
 ### Product Routes
 
-| Method | Endpoint                         | Description        | Body / Params                                                                                                                        |
-| ------ | -------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| POST   | `/api/product/addProduct`        | Add new product    | `title`, `category`, `brand`, `model`, `description`, `price`, `discountPrice`, `specs`, `images`, `stock` (body + form-data images) |
-| GET    | `/api/product/getProduct/:id`    | Get single product | `id` (param)                                                                                                                         |
-| GET    | `/api/product/getProducts`       | Get all products   | Query params optional (filtering/pagination)                                                                                         |
-| PUT    | `/api/product/updateProduct/:id` | Update product     | `id` (param), updated fields (body + form-data images)                                                                               |
-| DELETE | `/api/product/deleteProduct/:id` | Delete product     | `id` (param)                                                                                                                         |
+| Method | Endpoint                                                                                | Description        | Body / Params                                                                                                                                                                                                      |
+| ------ | --------------------------------------------------------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| POST   | `/api/product/addProduct`                                                               | Add new product    | `title` {required}, `category` {required}, `brand` {required}, `model`, `description` {required}, `price` {required}, `discountPrice`, `specs`, `images`, `stock` (body + form-data images), `category` {required} |
+| GET    | `/api/product/getProduct/:id`                                                           | Get single product | `id` (param)                                                                                                                                                                                                       |
+| GET    | `/api/product/getProducts` { page,limit,sortField,sortOrder,search,category} from query | Get all products   | Query params optional (filtering/pagination)                                                                                                                                                                       |
+| PUT    | `/api/product/updateProduct/:id`                                                        | Update product     | `id` (param), updated fields (body + form-data images)                                                                                                                                                             |
+| DELETE | `/api/product/deleteProduct/:id`                                                        | Delete product     | `id` (param)                                                                                                                                                                                                       |
 
 ---
 

@@ -16,8 +16,16 @@ const addProduct = async (req, res, next) => {
       return next(createError(401, "You're not allowed to do this"));
     }
 
-    const { title, description, model, price, discountPrice, specs, brand } =
-      req.body;
+    const {
+      title,
+      description,
+      model,
+      price,
+      discountPrice,
+      specs,
+      brand,
+      category,
+    } = req.body;
 
     const specsObj = typeof specs === "string" ? JSON.parse(specs) : specs;
 
@@ -46,7 +54,7 @@ const addProduct = async (req, res, next) => {
     const imageUrls = uploadedImages.map((r) => r.secure_url);
     const imagePublicIds = uploadedImages.map((r) => r.public_id);
 
-    if (!title || !description || !price || !brand) {
+    if (!title || !description || !price || !brand || !category) {
       return next(createError(404, "Something is missing"));
     }
 
@@ -72,6 +80,7 @@ const addProduct = async (req, res, next) => {
         ports: specsObj.ports,
         others: specsObj.others,
       },
+      category,
     });
 
     if (!product) {
@@ -101,19 +110,52 @@ const getProduct = async (req, res, next) => {
 };
 const getProducts = async (req, res, next) => {
   try {
-    const product = await Product.find();
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const search = req.query.search || "";
+    const category = req.query.category ? req.query.category.split(",") : [];
 
-    if (!product) {
+    const sortField = req.query.sortField === "name" ? "title" : "createdAt";
+    const sortOrder = req.query.sortOrder === "desc" ? -1 : 1;
+
+    const skip = (page - 1) * limit;
+
+    const query = {};
+
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { category: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    if (category.length > 0) {
+      query.category = { $in: category };
+    }
+
+    const products = await Product.find()
+      .skip(skip)
+      .limit(limit)
+      .sort({ [sortField]: sortOrder });
+
+    if (!products || products.length === 0) {
       return next(createError(404, "No Products Available Here"));
     }
 
-    res
-      .status(201)
-      .json({ message: "All products fethed Successfully", product });
+    const total = await Product.countDocuments(query);
+
+    res.status(200).json({
+      message: "All products fetched successfully",
+      products,
+      total,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+    });
   } catch (error) {
     next(error);
   }
 };
+
 const updateProduct = async (req, res, next) => {
   try {
     const userId = req.userId;
