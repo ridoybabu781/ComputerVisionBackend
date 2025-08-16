@@ -469,14 +469,8 @@ const getBlockedProfile = async (req, res, next) => {
 
 const logout = async (req, res, next) => {
   try {
-    res.clearCookie("accessToken", {
-      httpOnly: true,
-      sameSite: "none",
-    });
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      sameSite: "none",
-    });
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     next(error);
