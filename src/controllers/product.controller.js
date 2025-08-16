@@ -115,8 +115,8 @@ const getProducts = async (req, res, next) => {
     const search = req.query.search || "";
     const category = req.query.category ? req.query.category.split(",") : [];
 
-    const sortField = req.query.sortField === "name" ? "title" : "createdAt"; // default to date
-    const sortOrder = req.query.sortOrder === "desc" ? -1 : 1; // asc by default
+    const sortField = req.query.sortField === "name" ? "title" : "createdAt";
+    const sortOrder = req.query.sortOrder === "desc" ? -1 : 1;
 
     const skip = (page - 1) * limit;
 
