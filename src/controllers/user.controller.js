@@ -99,13 +99,13 @@ const createUser = async (req, res, next) => {
       .status(200)
       .cookie("accessToken", accessToken, {
         httpOnly: true,
+        secure: false,
         sameSite: "none",
-        maxAge: 60 * 60 * 1000,
       })
       .cookie("refreshToken", refreshToken, {
         httpOnly: true,
         sameSite: "none",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        secure: false,
       })
       .json({
         success: true,
@@ -469,8 +469,16 @@ const getBlockedProfile = async (req, res, next) => {
 
 const logout = async (req, res, next) => {
   try {
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: false,
+      sameSite: "none",
+    });
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: false,
+      sameSite: "none",
+    });
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     next(error);
