@@ -99,11 +99,13 @@ const createUser = async (req, res, next) => {
       .status(200)
       .cookie("accessToken", accessToken, {
         httpOnly: true,
+        secure: true,
         sameSite: "none",
         maxAge: 60 * 60 * 1000,
       })
       .cookie("refreshToken", refreshToken, {
         httpOnly: true,
+        secure: true,
         sameSite: "none",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       })
